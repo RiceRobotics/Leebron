@@ -56,6 +56,12 @@ extern "C" {
 
 // Prototypes for initialization, operator control and autonomous
 
+Ricemotor *MOTGate;
+
+Ricencoder *ENCDTLeft;
+Ricencoder *ENCDTRight;
+Ricencoder *ENCDTH;
+
 /**
  * Runs the user autonomous code. This function will be started in its own task with the default
  * priority and stack size whenever the robot is enabled via the Field Management System or the

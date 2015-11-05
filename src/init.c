@@ -59,4 +59,21 @@ void initializeIO() {
  * can be implemented in this task if desired.
  */
 void initialize() {
+	driveTrainStyle = DTHDRIVE;
+	controlStyle = CTHDRIVE;
+	riceBotInitialize();
+//	imeInitializeAll();
+
+	MOTDTFrontMidLeft = initRicemotor(2, 1);
+	MOTDTFrontMidRight = initRicemotor(3, 1);
+	MOTDTMidLeft = initRicemotor(8, 1);				//Y-split
+	MOTDTMidRight = initRicemotor(9, 1);			//Y-split
+	MOTDTHDrive = initRicemotor(4, 1);				//Y-split
+
+//	ENCDTLeft = initRicencoderIME(627.2, 1, 0, false);
+//	ENCDTRight = initRicencoderIME(627.2, 1, 1, false);
+//	ENCDTH = initRicencoderIME(627.2, 1, 2, false);
+
+	taskCreate(IOTask, TASK_DEFAULT_STACK_SIZE, NULL, TASK_PRIORITY_HIGHEST);
+//	taskCreate(PidTask, TASK_DEFAULT_STACK_SIZE, NULL, TASK_PRIORITY_DEFAULT);
 }
