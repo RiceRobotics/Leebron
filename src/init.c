@@ -64,11 +64,18 @@ void initialize() {
 	riceBotInitialize();
 //	imeInitializeAll();
 
-	MOTDTFrontMidLeft = initRicemotor(2, 1);
-	MOTDTFrontMidRight = initRicemotor(3, 1);
-	MOTDTMidLeft = initRicemotor(8, 1);				//Y-split
-	MOTDTMidRight = initRicemotor(9, 1);			//Y-split
-	MOTDTHDrive = initRicemotor(4, 1);				//Y-split
+	MOTDTFrontLeft = initRicemotor(2, 1);
+	MOTDTFrontMidLeft = initRicemotor(3, 1);
+	MOTDTMidLeft = initRicemotor(4, -1);
+
+	MOTDTFrontRight = initRicemotor(7, 1);
+	MOTDTFrontMidRight = initRicemotor(8, -1);
+	MOTDTMidRight = initRicemotor(9, 1);
+
+	MOTDTHDrive = initRicemotor(6, -1);
+	MOTIntake = initRicemotor(5, 1);
+	MOTGate = initRicemotor(10, -1);
+
 
 //	ENCDTLeft = initRicencoderIME(627.2, 1, 0, false);
 //	ENCDTRight = initRicencoderIME(627.2, 1, 1, false);
@@ -76,4 +83,16 @@ void initialize() {
 
 	taskCreate(IOTask, TASK_DEFAULT_STACK_SIZE, NULL, TASK_PRIORITY_HIGHEST);
 //	taskCreate(PidTask, TASK_DEFAULT_STACK_SIZE, NULL, TASK_PRIORITY_DEFAULT);
+	taskCreate(miscTask, TASK_DEFAULT_STACK_SIZE, NULL, TASK_PRIORITY_DEFAULT);
+}
+
+void miscTask(void *ignore) {
+	while(1) {
+		printf("DT Motors: %d %d %d || %d || %d %d %d                                                                     \r",
+				MOTDTFrontLeft->out, MOTDTFrontMidLeft->out, MOTDTMidLeft->out,
+				MOTDTHDrive->out,
+				MOTDTFrontRight->out, MOTDTFrontMidRight->out, MOTDTMidRight->out);
+
+		delay(20);
+	}
 }

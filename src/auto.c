@@ -34,6 +34,10 @@
 
 #include "main.h"
 
+void autoIntake(int power);
+//1 is open, -1 is closed
+void autoGate(int direction);
+
 /*
  * Runs the user autonomous code. This function will be started in its own task with the default
  * priority and stack size whenever the robot is enabled via the Field Management System or the
@@ -49,4 +53,14 @@
  * so, the robot will await a switch to another mode or disable/enable cycle.
  */
 void autonomous() {
+}
+
+void autoIntake(int power) {
+	MOTIntake->out = power;
+}
+
+void autoGate(int direction) {
+	MOTGate->out = 40*direction;
+	delay(250);
+	MOTGate->out = 0;
 }

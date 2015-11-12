@@ -57,6 +57,7 @@ extern "C" {
 // Prototypes for initialization, operator control and autonomous
 
 Ricemotor *MOTGate;
+Ricemotor *MOTIntake;
 
 Ricencoder *ENCDTLeft;
 Ricencoder *ENCDTRight;

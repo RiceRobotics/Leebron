@@ -55,7 +55,15 @@ void operatorControl() {
 
 	while (1) {
 		getJoystickForDriveTrain();
-		//Yo
+
+		if(joystickGetDigital(1, 6, JOY_UP)) MOTIntake->out = 127;
+		else if(joystickGetDigital(1, 6, JOY_DOWN)) MOTIntake->out = -127;
+		else MOTIntake->out = 0;
+
+		if(joystickGetDigital(1, 5, JOY_UP)) MOTGate->out = 40;
+		else if(joystickGetDigital(1, 5, JOY_DOWN)) MOTGate->out = -40;
+		else MOTGate->out = 0;
+
 		delay(20);
 	}
 }
