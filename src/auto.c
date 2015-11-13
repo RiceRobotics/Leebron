@@ -37,6 +37,8 @@
 void autoIntake(int power);
 //1 is open, -1 is closed
 void autoGate(int direction);
+//1 is right, -1 is left
+void autoStrafe(int direction, long timeout);
 
 /*
  * Runs the user autonomous code. This function will be started in its own task with the default
@@ -53,6 +55,26 @@ void autoGate(int direction);
  * so, the robot will await a switch to another mode or disable/enable cycle.
  */
 void autonomous() {
+	autoStrafe(1, 1000);
+	autonomousTask(AUTODRIVETIME, NULL, -60, 250);
+	autoGate(1);
+	delay(1500);
+	autonomousTask(AUTODRIVETIME, NULL, 60, 250);
+	autoGate(-1);
+	delay(100);
+	autonomousTask(AUTOTURNBASIC, 45, 60, 1500);
+	delay(100);
+	autoIntake(127);
+	autonomousTask(AUTODRIVETIME, NULL, 60, 500);
+	delay(250);
+	autonomousTask(AUTODRIVETIME, NULL, -60, 500);
+	delay(250);
+	autoIntake(0);
+	autonomousTask(AUTOTURNBASIC, -45, 60, 1500);
+	delay(100);
+	autonomousTask(AUTODRIVETIME, NULL, -60, 250);
+	autoGate(1);
+
 }
 
 void autoIntake(int power) {
@@ -64,3 +86,13 @@ void autoGate(int direction) {
 	delay(250);
 	MOTGate->out = 0;
 }
+
+void autoStrafe(int direction, long timeout) {
+	long startTime = millis();
+	while(millis() < startTime + timeout) {
+		MOTDTHDrive->out = 127*direction;
+	}
+	MOTDTHDrive->out = 0;
+}
+
+
