@@ -34,6 +34,8 @@
 
 #include "main.h"
 
+Gyro test;
+
 /*
  * Runs pre-initialization code. This function will be started in kernel mode one time while the
  * VEX Cortex is starting up. As the scheduler is still paused, most API functions will fail.
@@ -66,7 +68,7 @@ void initialize() {
 
 	MOTDTFrontLeft = initRicemotor(2, -1);
 	MOTDTFrontMidLeft = initRicemotor(3, -1);
-	MOTDTMidLeft = initRicemotor(4, 1);
+	MOTDTMidLeft = initRicemotor(4, -1);
 
 	MOTDTFrontRight = initRicemotor(7, -1);
 	MOTDTFrontMidRight = initRicemotor(8, 1);
@@ -76,7 +78,9 @@ void initialize() {
 	MOTIntake = initRicemotor(5, 1);
 	MOTGate = initRicemotor(10, -1);
 
-	gyro = initRicegyro(1, 0);
+//	gyro = initRicegyro(1, 0);
+
+//	test = gyroInit(1, 196);
 
 //	ENCDTLeft = initRicencoderIME(627.2, 1, 0, false);
 //	ENCDTRight = initRicencoderIME(627.2, 1, 1, false);
@@ -89,10 +93,11 @@ void initialize() {
 
 void miscTask(void *ignore) {
 	while(1) {
-		printf("DT Motors: %d %d %d || %d || %d %d %d                                                                     \r",
-				MOTDTFrontLeft->out, MOTDTFrontMidLeft->out, MOTDTMidLeft->out,
-				MOTDTHDrive->out,
-				MOTDTFrontRight->out, MOTDTFrontMidRight->out, MOTDTMidRight->out);
+//		printf("DT Motors: %d %d %d || %d || %d %d %d                                                                     \r",
+//				MOTDTFrontLeft->out, MOTDTFrontMidLeft->out, MOTDTMidLeft->out,
+//				MOTDTHDrive->out,
+//				MOTDTFrontRight->out, MOTDTFrontMidRight->out, MOTDTMidRight->out);
+		printf("Gyro: %d\n\r", gyroGet(test));
 
 		delay(20);
 	}

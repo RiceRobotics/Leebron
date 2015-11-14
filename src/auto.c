@@ -55,25 +55,38 @@ void autoStrafe(int direction, long timeout);
  * so, the robot will await a switch to another mode or disable/enable cycle.
  */
 void autonomous() {
-	autoStrafe(1, 1000);
-	autonomousTask(AUTODRIVETIME, NULL, -60, 250);
+	delay(10000);
+	autonomousTask(AUTODRIVETIME, NULL, -60, 6000);
 	autoGate(1);
-	delay(1500);
-	autonomousTask(AUTODRIVETIME, NULL, 60, 250);
-	autoGate(-1);
-	delay(100);
-	autonomousTask(AUTOTURNBASIC, 45, 60, 1500);
-	delay(100);
 	autoIntake(127);
-	autonomousTask(AUTODRIVETIME, NULL, 60, 500);
-	delay(250);
-	autonomousTask(AUTODRIVETIME, NULL, -60, 500);
-	delay(250);
+	delay(3000);
 	autoIntake(0);
-	autonomousTask(AUTOTURNBASIC, -45, 60, 1500);
-	delay(100);
-	autonomousTask(AUTODRIVETIME, NULL, -60, 250);
-	autoGate(1);
+
+
+//	autoStrafe(1, 1000);
+//	autonomousTask(AUTODRIVETIME, NULL, -60, 500);
+////	delay(15000);
+//	delay(2000);
+//	autoGate(1);
+//	delay(1500);
+//	autonomousTask(AUTODRIVETIME, NULL, 60, 500);
+//	autoGate(-1);
+
+
+
+//	delay(100);
+//	autonomousTask(AUTOTURNBASIC, 45, 60, 1500);
+//	delay(100);
+//	autoIntake(127);
+//	autonomousTask(AUTODRIVETIME, NULL, 60, 500);
+//	delay(250);
+//	autonomousTask(AUTODRIVETIME, NULL, -60, 500);
+//	delay(250);
+//	autoIntake(0);
+//	autonomousTask(AUTOTURNBASIC, -45, 60, 1500);
+//	delay(100);
+//	autonomousTask(AUTODRIVETIME, NULL, -60, 250);
+//	autoGate(1);
 
 }
 
