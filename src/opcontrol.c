@@ -53,49 +53,35 @@
  */
 void operatorControl() {
 
-	int driveRev = 1;
-
-
 	while (1) {
-		//		getJoystickForDriveTrain();
-
-		if(joystickGetDigital(1, 8, JOY_RIGHT))
-			driveRev = driveRev == 1 ? -1 : 1;
-
-		int x1 = joystickGetAnalog(1, 4);
-		int y1 = joystickGetAnalog(1, 3);
-		int x2 = joystickGetAnalog(1, 1);
-		int y2 = joystickGetAnalog(1, 2);
-		int left, right;
-		float norm;
-
-		left = y1*driveRev + x1;
-		right = y1*driveRev - x1;
-		norm = normalize(left, right);
-
-		MOTDTFrontLeft->out = left * norm;
-		MOTDTFrontMidLeft->out = left * norm;
-		MOTDTMidLeft->out = left * norm;
-		MOTDTBackLeft->out = left * norm ;
-
-		MOTDTFrontRight->out = right * norm;
-		MOTDTFrontMidRight->out = right * norm;
-		MOTDTMidRight->out = right * norm;
-		MOTDTBackRight->out = right * norm;
-
-		MOTDTHDrive->out = x2 * driveRev;
+		getJoystickForDriveTrain();
 
 		if(joystickGetDigital(1, 6, JOY_UP)) MOTIntake->out = 127;
 		else if(joystickGetDigital(1, 6, JOY_DOWN)) MOTIntake->out = -127;
 		else MOTIntake->out = 0;
 
-		if(joystickGetDigital(1, 5, JOY_UP)) MOTGate->out = 40;
-		else if(joystickGetDigital(1, 5, JOY_DOWN)) MOTGate->out = -40;
-		else MOTGate->out = 0;
+		if(joystickGetDigital(1, 7, JOY_UP)) MOTConveyor->out = 127;
+		else if(joystickGetDigital(1, 7, JOY_DOWN)) MOTConveyor->out = -127;
+		else MOTConveyor->out = 0;
 
-		if(joystickGetDigital(1, 8, JOY_UP)) autonomous();
+		if(joystickGetDigital(1, 7, JOY_RIGHT)) MOTMagazine->out = 127;
+		else if(joystickGetDigital(1, 7, JOY_LEFT)) MOTMagazine->out = -127;
+		else MOTMagazine->out = 0;
 
-		printf("Left: %d, Right: %d, driveRev: %d\n\r", left, right, driveRev);
+		if(joystickGetDigital(1, 5, JOY_UP)) {
+			MOTMjolnir->out = 127;
+			MOTHammer->out = 127;
+		}
+		else if(joystickGetDigital(1, 5, JOY_DOWN)) {
+			MOTMjolnir->out = -127;
+			MOTHammer->out = -127;
+		}
+		else {
+			MOTMjolnir->out = 0;
+			MOTHammer->out = 0;
+		}
+
+//		if(joystickGetDigital(1, 8, JOY_UP)) autonomous();
 
 		delay(20);
 	}

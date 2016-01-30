@@ -61,22 +61,21 @@ void initializeIO() {
  * can be implemented in this task if desired.
  */
 void initialize() {
-	driveTrainStyle = DTHDRIVE;
-	controlStyle = CTHDRIVEARCADE;
+	driveTrainStyle = DTFOURWHEELS;
+	controlStyle = CTCHEEZYDRIVE;
 	riceBotInitialize();
-//	imeInitializeAll();
 
-	MOTDTFrontLeft = initRicemotor(2, -1);
-	MOTDTFrontMidLeft = initRicemotor(3, -1);
-	MOTDTMidLeft = initRicemotor(4, -1);
+	MOTDTFrontLeft = initRicemotor(2, 1);
+	MOTDTMidLeft = initRicemotor(8, 1);
 
-	MOTDTFrontRight = initRicemotor(7, -1);
-	MOTDTFrontMidRight = initRicemotor(8, 1);
+	MOTDTFrontRight = initRicemotor(3, 1);
 	MOTDTMidRight = initRicemotor(9, 1);
 
-	MOTDTHDrive = initRicemotor(6, -1);
-	MOTIntake = initRicemotor(5, 1);
-	MOTGate = initRicemotor(10, -1);
+	MOTIntake = initRicemotor(6, 1);
+	MOTConveyor = initRicemotor(7, 1);
+	MOTMagazine = initRicemotor(5, -1);
+	MOTMjolnir = initRicemotor(4, -1);
+	MOTHammer = initRicemotor(1, -1);
 
 //	gyro = initRicegyro(1, 0);
 
@@ -87,18 +86,4 @@ void initialize() {
 //	ENCDTH = initRicencoderIME(627.2, 1, 2, false);
 
 	taskCreate(IOTask, TASK_DEFAULT_STACK_SIZE, NULL, TASK_PRIORITY_HIGHEST);
-//	taskCreate(PidTask, TASK_DEFAULT_STACK_SIZE, NULL, TASK_PRIORITY_DEFAULT);
-//	taskCreate(miscTask, TASK_DEFAULT_STACK_SIZE, NULL, TASK_PRIORITY_DEFAULT);
-}
-
-void miscTask(void *ignore) {
-	while(1) {
-//		printf("DT Motors: %d %d %d || %d || %d %d %d                                                                     \r",
-//				MOTDTFrontLeft->out, MOTDTFrontMidLeft->out, MOTDTMidLeft->out,
-//				MOTDTHDrive->out,
-//				MOTDTFrontRight->out, MOTDTFrontMidRight->out, MOTDTMidRight->out);
-		printf("Gyro: %d\n\r", gyroGet(test));
-
-		delay(20);
-	}
 }

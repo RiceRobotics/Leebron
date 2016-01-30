@@ -56,8 +56,11 @@ extern "C" {
 
 // Prototypes for initialization, operator control and autonomous
 
-Ricemotor *MOTGate;
 Ricemotor *MOTIntake;
+Ricemotor *MOTConveyor;
+Ricemotor *MOTMagazine;
+Ricemotor *MOTMjolnir;
+Ricemotor *MOTHammer;
 
 Ricencoder *ENCDTLeft;
 Ricencoder *ENCDTRight;

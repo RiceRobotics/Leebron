@@ -95,9 +95,9 @@ void autoIntake(int power) {
 }
 
 void autoGate(int direction) {
-	MOTGate->out = 40*direction;
-	delay(250);
-	MOTGate->out = 0;
+//	MOTGate->out = 40*direction;
+//	delay(250);
+//	MOTGate->out = 0;
 }
 
 void autoStrafe(int direction, long timeout) {
