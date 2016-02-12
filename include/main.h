@@ -45,6 +45,7 @@
 
 #include <API.h>
 #include "../../RiceBot/include/RiceBot.h"
+#include <string.h>
 
 // Allow usage of this file in C++ programs
 #ifdef __cplusplus
@@ -65,6 +66,11 @@ Ricemotor *MOTHammer;
 Ricencoder *ENCDTLeft;
 Ricencoder *ENCDTRight;
 Ricencoder *ENCDTH;
+
+Ricepid* gyroPid;
+char* uartIn;
+
+void vision();
 
 /**
  * Runs the user autonomous code. This function will be started in its own task with the default
