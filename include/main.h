@@ -60,17 +60,31 @@ extern "C" {
 Ricemotor *MOTIntake;
 Ricemotor *MOTConveyor;
 Ricemotor *MOTMagazine;
-Ricemotor *MOTMjolnir;
-Ricemotor *MOTHammer;
+Ricemotor *MOTMjolnir;			//Launcher (2 Y-split motors)
+Ricemotor *MOTHammer;		//Launcher (Single motor)
+
+RicesensorAnalog *ANAIntake;
+RicesensorAnalog *ANAConveyor;
+RicesensorAnalog *ANAHammer;
+
+int ANAIntakeThreshold;
+int ANAConveyorThreshold;
+int ANAHammerThreshold;
 
 Ricencoder *ENCDTLeft;
 Ricencoder *ENCDTRight;
-Ricencoder *ENCDTH;
 
+Ricepid* driveLeftPid;
+Ricepid* driveRightPid;
 Ricepid* gyroPid;
 char* uartIn;
 
 void vision();
+void pidTurn(int angle);
+
+void intakeFSM(int intakeDir);
+void launcherFSM(int launch);
+void fullFSM(int intakeDir, int launch);
 
 /**
  * Runs the user autonomous code. This function will be started in its own task with the default

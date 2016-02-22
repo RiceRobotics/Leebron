@@ -53,36 +53,157 @@
  */
 void operatorControl() {
 
+	int intakeDir, launch;
+
+	resetRicencoder();
 	while (1) {
 		getJoystickForDriveTrain();
 
-		if(joystickGetDigital(1, 6, JOY_UP)) MOTIntake->out = 127;
-		else if(joystickGetDigital(1, 6, JOY_DOWN)) MOTIntake->out = -127;
-		else MOTIntake->out = 0;
+		if(joystickGetDigital(1, 6, JOY_UP)) intakeDir = 1;
+		else if(joystickGetDigital(1, 6, JOY_DOWN)) intakeDir = -1;
+		else intakeDir = 0;
 
-		if(joystickGetDigital(1, 7, JOY_UP)) MOTConveyor->out = 127;
-		else if(joystickGetDigital(1, 7, JOY_DOWN)) MOTConveyor->out = -127;
-		else MOTConveyor->out = 0;
+		if(joystickGetDigital(1, 5, JOY_UP)) launch = 1;
+		else launch = 0;
 
-		if(joystickGetDigital(1, 7, JOY_RIGHT)) MOTMagazine->out = 127;
-		else if(joystickGetDigital(1, 7, JOY_LEFT)) MOTMagazine->out = -127;
-		else MOTMagazine->out = 0;
-
-		if(joystickGetDigital(1, 5, JOY_UP)) {
-			MOTMjolnir->out = 127;
-			MOTHammer->out = 127;
+		if(joystickGetDigital(1, 8, JOY_UP) && !driveLeftPid->running && !driveRightPid->running) {
+			driveLeftPid->running = 1;
+			driveRightPid->running = 1;
+			float inches = 12;
+			driveLeftPid->setPoint = ENCDTLeft->adjustedValue + inches / (4.0*MATH_PI) * ENCDTLeft->ticksPerRev;
+			driveRightPid->setPoint = ENCDTRight->adjustedValue + inches / (4.0*MATH_PI) * ENCDTRight->ticksPerRev;
 		}
-		else if(joystickGetDigital(1, 5, JOY_DOWN)) {
-			MOTMjolnir->out = -127;
-			MOTHammer->out = -127;
+		if(joystickGetDigital(1, 8, JOY_DOWN) && !driveLeftPid->running && !driveRightPid->running) {
+			driveLeftPid->running = 1;
+			driveRightPid->running = 1;
+			float inches = -12;
+			driveLeftPid->setPoint = ENCDTLeft->adjustedValue + inches / (4.0*MATH_PI) * ENCDTLeft->ticksPerRev;
+			driveRightPid->setPoint = ENCDTRight->adjustedValue + inches / (4.0*MATH_PI) * ENCDTRight->ticksPerRev;
+		}
+		if(driveLeftPid->running && driveRightPid->running) {
+			if(joystickGetDigital(1, 7, JOY_UP) || driveLeftPid->atSetpoint || driveRightPid->atSetpoint) {
+				driveLeftPid->running = 0;
+				driveRightPid->running = 0;
+				driveLeftPid->atSetpoint = 0;
+				driveRightPid->atSetpoint = 0;
+				driveLeftPid->integral = 0;
+				driveRightPid->integral = 0;
+				MOTDTFrontLeft->out = 0;
+				MOTDTMidLeft->out = 0;
+				MOTDTFrontRight->out = 0;
+				MOTDTMidRight->out = 0;
+			}
+			else {
+				MOTDTFrontLeft->out = driveLeftPid->output;
+				MOTDTMidLeft->out = driveLeftPid->output;
+				MOTDTFrontRight->out = driveRightPid->output;
+				MOTDTMidRight->out = driveRightPid->output;
+			}
+		}
+
+		if(joystickGetDigital(1, 8, JOY_LEFT) && !gyroPid->running) {
+			gyroPid->running = 1;
+			gyroPid->setPoint = gyro->value + 90;
+		}
+		if(joystickGetDigital(1, 8, JOY_RIGHT) && !gyroPid->running) {
+			gyroPid->running = 1;
+			gyroPid->setPoint = gyro->value - 90;
+		}
+		if(gyroPid->running) {
+			if(joystickGetDigital(1, 7, JOY_DOWN) || gyroPid->atSetpoint) {
+				gyroPid->running = 0;
+				gyroPid->atSetpoint = 0;
+				gyroPid->integral = 0;
+				MOTDTFrontLeft->out = 0;
+				MOTDTMidLeft->out = 0;
+				MOTDTFrontRight->out = 0;
+				MOTDTMidRight->out = 0;
+			}
+			else {
+				MOTDTFrontLeft->out = -gyroPid->output;
+				MOTDTMidLeft->out = -gyroPid->output;
+				MOTDTFrontRight->out = gyroPid->output;
+				MOTDTMidRight->out = gyroPid->output;
+			}
+		}
+
+		//		printf("Gyro: %4d/%4d, pidRunning: %1d, error: %3.1f, atSetpoint: %1d, "
+		//				"output: %4d = %4.1f + %4.1f + %4.1f\n\r",
+		//				gyro->value, gyroPid->setPoint, gyroPid->running, gyroPid->error, gyroPid->atSetpoint,
+		//				gyroPid->output, gyroPid->kP*gyroPid->error, gyroPid->kI*gyroPid->integral, gyroPid->kD*gyroPid->derivative);
+
+		printf("Enc: %4d/%4d, pidRunning: %1d, error: %3.1f, atSetpoint: %1d, "
+				"output: %4d = %4.1f + %4.1f + %4.1f\n\r",
+				ENCDTLeft->adjustedValue, driveLeftPid->setPoint, driveLeftPid->running, driveLeftPid->error, driveLeftPid->atSetpoint,
+				driveLeftPid->output, driveLeftPid->kP*driveLeftPid->error, driveLeftPid->kI*driveLeftPid->integral, driveLeftPid->kD*driveLeftPid->derivative);
+		fullFSM(intakeDir, launch);
+		delay(20);
+	}
+}
+
+void fullFSM(int intakeDir, int launch) {
+	int intakeState, conveyorState, hammerState;
+	static int intakeStateLast = 0, hammerStateLast = 0;
+	static int numBalls = 0;
+
+	intakeState = ANAIntake->value < ANAIntakeThreshold;
+	conveyorState = ANAConveyor->value < ANAConveyorThreshold;
+	hammerState = ANAHammer->value < ANAHammerThreshold;
+
+	if(intakeDir == 1) {
+		MOTIntake->out = 127;
+		if(!conveyorState && intakeState) {
+			MOTConveyor->out = 127;
+		}
+		else {
+			MOTConveyor->out = 0;
+		}
+		if(intakeState && !intakeStateLast) numBalls++;
+	}
+	else if(intakeDir == -1) {
+		MOTIntake->out = -127;
+		MOTConveyor->out = -127;
+		if(!intakeState && intakeStateLast) numBalls--;
+	}
+	else {
+		MOTIntake->out = 0;
+		MOTConveyor->out = 0;
+	}
+
+	if(launch) {
+		if(hammerState) {
+			MOTMjolnir->out = 90;
+			MOTHammer->out = 90;
+			MOTMagazine->out = 0;
 		}
 		else {
 			MOTMjolnir->out = 0;
 			MOTHammer->out = 0;
+			MOTMagazine->out = 127;
+			if(!conveyorState) MOTConveyor->out = 127;
+			else MOTConveyor->out = 0;
+			if(intakeState) MOTIntake->out = 127;
+			else MOTIntake->out = 0;
+			if(!hammerState && hammerStateLast) numBalls--;
 		}
-
-//		if(joystickGetDigital(1, 8, JOY_UP)) autonomous();
-
-		delay(20);
 	}
+	else {
+		MOTMjolnir->out = 0;
+		MOTHammer->out = 0;
+		MOTMagazine->out = 0;
+	}
+
+	if(numBalls < 0 || joystickGetDigital(1, 8, JOY_LEFT)) numBalls = 0;
+
+	//	if(intakeState != intakeStateLast) {
+	//		printf("\nIntakeState|Last: %d|%d, ANAIntake: %4d, ANAConveyor: %4d, ANAHammer: %4d, numBalls: %d\n\r",
+	//				intakeState, intakeStateLast, ANAIntake->value, ANAConveyor->value, ANAHammer->value, numBalls);
+	//	}
+	//	else
+	//		printf("IntakeState|Last: %d|%d, ANAIntake: %4d, ANAConveyor: %4d, ANAHammer: %4d, numBalls: %d\r",
+	//						intakeState, intakeStateLast, ANAIntake->value, ANAConveyor->value, ANAHammer->value, numBalls);
+	intakeStateLast = intakeState;
+	hammerStateLast = hammerState;
 }
+
+

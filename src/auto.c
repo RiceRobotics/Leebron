@@ -34,12 +34,6 @@
 
 #include "main.h"
 
-void autoIntake(int power);
-//1 is open, -1 is closed
-void autoGate(int direction);
-//1 is right, -1 is left
-void autoStrafe(int direction, long timeout);
-
 /*
  * Runs the user autonomous code. This function will be started in its own task with the default
  * priority and stack size whenever the robot is enabled via the Field Management System or the
@@ -55,57 +49,38 @@ void autoStrafe(int direction, long timeout);
  * so, the robot will await a switch to another mode or disable/enable cycle.
  */
 void autonomous() {
-	delay(10000);
-	autonomousTask(AUTODRIVETIME, NULL, -60, 6000);
-	autoGate(1);
-	autoIntake(127);
-	delay(3000);
-	autoIntake(0);
-
-
-//	autoStrafe(1, 1000);
-//	autonomousTask(AUTODRIVETIME, NULL, -60, 500);
-////	delay(15000);
-//	delay(2000);
-//	autoGate(1);
-//	delay(1500);
-//	autonomousTask(AUTODRIVETIME, NULL, 60, 500);
-//	autoGate(-1);
-
-
-
-//	delay(100);
-//	autonomousTask(AUTOTURNBASIC, 45, 60, 1500);
-//	delay(100);
-//	autoIntake(127);
-//	autonomousTask(AUTODRIVETIME, NULL, 60, 500);
-//	delay(250);
-//	autonomousTask(AUTODRIVETIME, NULL, -60, 500);
-//	delay(250);
-//	autoIntake(0);
-//	autonomousTask(AUTOTURNBASIC, -45, 60, 1500);
-//	delay(100);
-//	autonomousTask(AUTODRIVETIME, NULL, -60, 250);
-//	autoGate(1);
-
+	//Drive straight
+	//Turn 90 towards big bot
+	//Possibly wait for big bot to launch all preloads
+	//Launch 4 preloads into big bot?
+	//Save location for field centric stuffs
+	//Turn 180
+	//Vision, find and pick up 4 balls
+	//Return to saved location
+	//Launch 4 balls into big bot
+	//Back up?
+	//Drive up ramp
 }
 
-void autoIntake(int power) {
-	MOTIntake->out = power;
-}
-
-void autoGate(int direction) {
-//	MOTGate->out = 40*direction;
-//	delay(250);
-//	MOTGate->out = 0;
-}
-
-void autoStrafe(int direction, long timeout) {
-	long startTime = millis();
-	while(millis() < startTime + timeout) {
-		MOTDTHDrive->out = 127*direction;
+//Left is positive, right is negative
+void pidTurn(int angle) {
+	gyroPid->running = 1;
+	gyroPid->setPoint = gyro->value + angle;
+	while(gyroPid->running) {
+		if(gyroPid->atSetpoint) {
+			gyroPid->running = 0;
+			gyroPid->atSetpoint = 0;
+			gyroPid->integral = 0;
+			MOTDTFrontLeft->out = 0;
+			MOTDTMidLeft->out = 0;
+			MOTDTFrontRight->out = 0;
+			MOTDTMidRight->out = 0;
+		}
+		else {
+			MOTDTFrontLeft->out = -gyroPid->output;
+			MOTDTMidLeft->out = -gyroPid->output;
+			MOTDTFrontRight->out = gyroPid->output;
+			MOTDTMidRight->out = gyroPid->output;
+		}
 	}
-	MOTDTHDrive->out = 0;
 }
-
-

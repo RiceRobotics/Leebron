@@ -67,35 +67,43 @@ void initialize() {
 	controlStyle = CTCHEEZYDRIVE;
 	riceBotInitialize();
 
-	MOTDTFrontLeft = initRicemotor(2, 1);
-	MOTDTMidLeft = initRicemotor(8, 1);
+	MOTDTFrontLeft = initRicemotor(2, -1);
+	MOTDTMidLeft = initRicemotor(8, 1);					//Y-split
 
 	MOTDTFrontRight = initRicemotor(3, 1);
-	MOTDTMidRight = initRicemotor(9, 1);
+	MOTDTMidRight = initRicemotor(9, -1);				//Y-split
 
 	MOTIntake = initRicemotor(6, 1);
-	MOTConveyor = initRicemotor(7, 1);
+	MOTConveyor = initRicemotor(7, -1);
 	MOTMagazine = initRicemotor(5, -1);
 	MOTMjolnir = initRicemotor(4, -1);
-	MOTHammer = initRicemotor(1, -1);
+	MOTHammer = initRicemotor(10, -1);
 
-//	gyro = initRicegyro(1, 0);
+	ANAIntake = initRicesensorAnalog(2, true);
+	ANAConveyor = initRicesensorAnalog(3, true);
+	ANAHammer = initRicesensorAnalog(4, true);
 
-//	test = gyroInit(1, 196);
+	ANAIntakeThreshold = -30;
+	ANAConveyorThreshold = -150;
+	ANAHammerThreshold = -100;
 
-//	ENCDTLeft = initRicencoderIME(627.2, 1, 0, false);
-//	ENCDTRight = initRicencoderIME(627.2, 1, 1, false);
-//	ENCDTH = initRicencoderIME(627.2, 1, 2, false);
+	gyro = initRicegyro(1, 198);
 
-//	Ricemotor* array[2] = {MOTDefault, MOTDefault};
-//	gyroPid = initRicepid(&gyro->value, 2, 1.5, .03, .03, array);
+	imeInitializeAll();
+	ENCDTLeft = initRicencoderIME(627.2, 1, 0, false);
+	ENCDTRight = initRicencoderIME(627.2, 1, 1, true);
+
+	Ricemotor* array[2] = {MOTDefault, MOTDefault};
+	driveLeftPid = initRicepid(&ENCDTLeft->adjustedValue, 35, .09, .0005, .05, array);
+	driveRightPid = initRicepid(&ENCDTRight->adjustedValue, 35, .09, .0005, .05, array);
+	gyroPid = initRicepid(&gyro->value, 1, .25, .003, 0, array);
 
 	taskCreate(IOTask, TASK_DEFAULT_STACK_SIZE, NULL, TASK_PRIORITY_HIGHEST);
-//	taskCreate(PidTask, TASK_DEFAULT_STACK_SIZE, NULL, TASK_PRIORITY_DEFAULT);
+	taskCreate(PidTask, TASK_DEFAULT_STACK_SIZE, NULL, TASK_PRIORITY_DEFAULT);
 }
 
 void vision() {
-	gyroReset(gyro->g);
+//	gyroReset(gyro->g);
 	gyroPid->running = 1;
 	int targetAngle = gyro->value;		//UART angle goeth here.
 	int seesBall = 0;							//UART ball in sight
