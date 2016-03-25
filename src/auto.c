@@ -49,25 +49,91 @@
  * so, the robot will await a switch to another mode or disable/enable cycle.
  */
 void autonomous() {
-	//Drive straight
-	//Turn 90 towards big bot
-	//Possibly wait for big bot to launch all preloads
-	//Launch 4 preloads into big bot?
-	//Save location for field centric stuffs
-	//Turn 180
-	//Vision, find and pick up 4 balls
-	//Return to saved location
-	//Launch 4 balls into big bot
-	//Back up?
-	//Drive up ramp
+	intakeDir = 0;
+	launch = 0;
+	pidDrive(-28, 5000);
+	delay(500);
+	//	pidTurn(gyro->value - 20, 5000);
+	autonomousTask(AUTOTURNTIME, -1, 30, 500);
+	delay(500);
+	int startTime = millis();
+	while(numBalls > -4 && millis() - startTime < 15000) {
+		launch = 1;
+		delay(20);
+	}
+	launch = 0;
+	delay(500);
+	pidDrive(-6, 2500);
+	delay(500);
+	pidTurn(gyro->value + 60, 5000);
+	delay(500);
+	intakeDir = 1;
+	autonomousTask(AUTODRIVETIME, NULL, 60, 1000);
+	delay(500);
+	autonomousTask(AUTODRIVETIME, NULL, -60, 750);
+	delay(500);
+	autonomousTask(AUTODRIVETIME, NULL, 60, 1000);
+	delay(500);
+	autonomousTask(AUTODRIVETIME, NULL, -60, 750);
+	delay(500);
+	autonomousTask(AUTODRIVETIME, NULL, 60, 1000);
+	delay(500);
+	autonomousTask(AUTODRIVETIME, NULL, -60, 750);
+	delay(500);
+	intakeDir = 0;
+	pidTurn(gyro->value - 80, 5000);
+//	autonomousTask(AUTOTURNTIME, -1, 30, 300);
+	delay(1000);
+//	pidDrive(6, 2500);
+	delay(500);
+	startTime = millis();
+	while(millis() - startTime < 15000) {
+		launch = 1;
+		delay(20);
+	}
+}
+
+void pidDrive(float distance, long timeout) {
+	long startTime = millis();
+	driveLeftPid->running = 1;
+	driveRightPid->running = 1;
+	driveLeftPid->setPoint = ENCDTLeft->adjustedValue + distance / (4.0*MATH_PI) * ENCDTLeft->ticksPerRev;
+	driveRightPid->setPoint = ENCDTRight->adjustedValue + distance / (4.0*MATH_PI) * ENCDTRight->ticksPerRev;
+	printf("\n");
+	while(driveLeftPid->running && driveRightPid->running && millis() - startTime < timeout) {
+		if(joystickGetDigital(2, 7, JOY_DOWN) || (driveLeftPid->atSetpoint && driveRightPid->atSetpoint)) {
+			driveLeftPid->running = 0;
+			driveRightPid->running = 0;
+			driveLeftPid->atSetpoint = 0;
+			driveRightPid->atSetpoint = 0;
+			driveLeftPid->integral = 0;
+			driveRightPid->integral = 0;
+			MOTDTFrontLeft->out = 0;
+			MOTDTMidLeft->out = 0;
+			MOTDTFrontRight->out = 0;
+			MOTDTMidRight->out = 0;
+		}
+		else {
+			MOTDTFrontLeft->out = driveLeftPid->output;
+			MOTDTMidLeft->out = driveLeftPid->output;
+			MOTDTFrontRight->out = driveRightPid->output;
+			MOTDTMidRight->out = driveRightPid->output;
+		}
+		printf("Enc: %4d/%4d, pidRunning: %1d, error: %3.1f, atSetpoint: %1d, "
+				"output: %4d = %4.1f + %4.1f + %4.1f\r",
+				ENCDTLeft->adjustedValue, driveLeftPid->setPoint, driveLeftPid->running, driveLeftPid->error, driveLeftPid->atSetpoint,
+				driveLeftPid->output, driveLeftPid->kP*driveLeftPid->error, driveLeftPid->kI*driveLeftPid->integral, driveLeftPid->kD*driveLeftPid->derivative);
+	}
 }
 
 //Left is positive, right is negative
-void pidTurn(int angle) {
+void pidTurn(int angle, long timeout) {
+	long startTime = millis();
 	gyroPid->running = 1;
-	gyroPid->setPoint = gyro->value + angle;
-	while(gyroPid->running) {
-		if(gyroPid->atSetpoint) {
+	gyroPid->setPoint = angle;
+	printf("\n");
+	while(gyroPid->running && millis() - startTime < timeout) {
+		if(joystickGetDigital(2, 7, JOY_DOWN) || gyroPid->atSetpoint) {
 			gyroPid->running = 0;
 			gyroPid->atSetpoint = 0;
 			gyroPid->integral = 0;
@@ -82,5 +148,77 @@ void pidTurn(int angle) {
 			MOTDTFrontRight->out = gyroPid->output;
 			MOTDTMidRight->out = gyroPid->output;
 		}
+//		printf("Gyro: %4d/%4d, pidRunning: %1d, error: %3.1f, atSetpoint: %1d, "
+//				"output: %4d = %4.1f + %4.1f + %4.1f\r",
+//				gyro->value, gyroPid->setPoint, gyroPid->running, gyroPid->error, gyroPid->atSetpoint,
+//				gyroPid->output, gyroPid->kP*gyroPid->error, gyroPid->kI*gyroPid->integral, gyroPid->kD*gyroPid->derivative);
 	}
+	gyroPid->running = 0;
+	gyroPid->integral = 0;
+}
+
+void vision() {
+	visionPid->running = 1;
+	int targetAngle = gyro->value;		//UART angle goeth here.
+	seesBall = 0;									//UART ball in sight
+	int turnPow = 0;
+	int drivePow = 30;
+	for(ever) {
+		if(joystickGetDigital(2, 7, JOY_DOWN)) operatorControl();
+		char* sInput = fgets(uartIn, 6, uart1);
+		if(sInput) {
+			//			printf("%6s\n\r", sInput);
+			char* sAngle = strtok(sInput, " ");
+			char* sBalls = strtok(NULL, " ");
+			seesBall = atoi(sBalls);
+			if(seesBall)
+				targetAngle = gyro->value - atoi(sAngle);		//- because raspi angle + is on right, and gyro angle + is on left
+			printf("Angle: %3d, %d\n\r", atoi(sAngle), seesBall);
+		}
+		visionPid->setPoint = targetAngle;
+		turnPow = seesBall ? visionPid->output : 0;
+		//		printf("Targets: %d/%d degrees, %d, pow: %d\n\r", gyro->value, targetAngle, seesBall, turnPow);
+		//		printf("Gyro: %d/%d, atSetpoint: %d, output: %d\n\r", gyro->value, gyroPid->setPoint, gyroPid->atSetpoint, gyroPid->output);
+		if(seesBall) {
+			if(!visionPid->atSetpoint) {
+				MOTDTFrontLeft->out = -turnPow;
+				MOTDTFrontRight->out = turnPow;
+				MOTDTMidLeft->out = -turnPow;
+				MOTDTMidRight->out = turnPow;
+			}
+			else {
+				//				fullFSM(1, 0);
+				//				MOTDTFrontLeft->out = drivePow;
+				//				MOTDTFrontRight->out = drivePow;
+				//				MOTDTMidLeft->out = drivePow;
+				//				MOTDTMidRight->out = drivePow;
+				MOTDTFrontLeft->out = 0;
+				MOTDTFrontRight->out = 0;
+				MOTDTMidLeft->out = 0;
+				MOTDTMidRight->out = 0;
+			}
+		}
+		else {
+			targetAngle = gyro->value;
+			if(intakeState && conveyorState) {
+				operatorControl();
+			}
+			else {
+				turnPow = 30;
+				//				MOTDTFrontLeft->out = -turnPow;
+				//				MOTDTFrontRight->out = turnPow;
+				//				MOTDTMidLeft->out = -turnPow;
+				//				MOTDTMidRight->out = turnPow;
+				MOTDTFrontLeft->out = 0;
+				MOTDTFrontRight->out = 0;
+				MOTDTMidLeft->out = 0;
+				MOTDTMidRight->out = 0;
+			}
+		}
+		delay(20);
+	}
+	MOTDTFrontLeft->out = 0;
+	MOTDTFrontRight->out = 0;
+	MOTDTMidLeft->out = 0;
+	MOTDTMidRight->out = 0;
 }

@@ -45,6 +45,7 @@
 
 #include <API.h>
 #include "../../RiceBot/include/RiceBot.h"
+//#include "RiceBot.h"
 #include <string.h>
 
 // Allow usage of this file in C++ programs
@@ -71,20 +72,28 @@ int ANAIntakeThreshold;
 int ANAConveyorThreshold;
 int ANAHammerThreshold;
 
-Ricencoder *ENCDTLeft;
-Ricencoder *ENCDTRight;
+int intakeState, conveyorState, hammerState;
+//Ricencoder *ENCDTLeft;
+//Ricencoder *ENCDTRight;
 
 Ricepid* driveLeftPid;
 Ricepid* driveRightPid;
 Ricepid* gyroPid;
+Ricepid* visionPid;
 char* uartIn;
 
-void vision();
-void pidTurn(int angle);
+int intakeDir;
+int launch;
+int numBalls;
+int seesBall;
 
-void intakeFSM(int intakeDir);
-void launcherFSM(int launch);
-void fullFSM(int intakeDir, int launch);
+int fsmOverride;
+
+void vision();
+void pidDrive(float distance, long timeout);
+void pidTurn(int angle, long timeout);
+
+void fullFSM(void* ignore);
 
 /**
  * Runs the user autonomous code. This function will be started in its own task with the default
